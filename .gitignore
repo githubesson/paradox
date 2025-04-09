@@ -1,2 +1,8 @@
-/.DS_Store
+**/.DS_Store
 *.keychain-db
+/server/log-directory/*
+/server/decoded-output/*
+/built/*
+/server/builds.db
+/server/paradox_server
+/payload/paradox_payload

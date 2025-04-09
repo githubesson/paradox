@@ -53,12 +53,6 @@ This software is provided for educational and research purposes only. The author
    go build -o paradox-server .
    ```
 
-3. Set up the client:
-   ```bash
-   cd ../client
-   go build -o paradox-client .
-   ```
-
 ## Usage
 
 1. Start the server:
@@ -69,19 +63,26 @@ This software is provided for educational and research purposes only. The author
 
 2. The server will listen on 127.0.0.1:8080.
 
-3. Run the client on a mac based machine:
+3. Build the client:
    ```bash
-   cd ../client
-   ./paradox-client
+   curl http://localhost:8080/build
+   ```
+   If you set everything up correctly, the response should be along the lines of: {"build_id":"randombuildid (you will need this for the next step)","filename":"randomfilename","message":"Payload built successfully"}. Self built clients will not work due to build id validation on client upload.
+
+4. Download the client:
+   ```bash
+   curl http://localhost:8080/download/build/:buildidfromjsonresponse:
    ```
 
+5. Run the client
 
 ## Project Structure
 
 ```
 .
+├── built/      # Clients built by the server
 ├── server/     # Go server implementation
-└─── client/     # Clientside code
+└── payload/    # Clientside code
 ```
 
 Note: This is a proof-of-concept implementation. Some features may be incomplete or require additional configuration.

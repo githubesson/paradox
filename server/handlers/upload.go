@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HandleUpload(c *gin.Context) {
+func HandleUpload(c *gin.Context, db *sql.DB) {
 	file, err := c.FormFile("payload")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file from form: " + err.Error()})
@@ -51,13 +52,16 @@ func HandleUpload(c *gin.Context) {
 		"tempPath": tempDir,
 	})
 
-	go processPayloadAsync(zipPath, tempDir)
+	go processPayloadAsync(zipPath, tempDir, db)
 }
 
-func processPayloadAsync(zipPath, tempDir string) {
-
-	defer os.RemoveAll(tempDir)
+func processPayloadAsync(zipPath, tempDir string, db *sql.DB) {
 	log.Printf("Background processing started for: %s in %s\n", zipPath, tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			log.Printf("Error cleaning up temp directory %s: %v\n", tempDir, err)
+		}
+	}()
 
 	extractDir := filepath.Join(tempDir, "extracted")
 	if err := fileops.Unzip(zipPath, extractDir); err != nil {
@@ -68,13 +72,6 @@ func processPayloadAsync(zipPath, tempDir string) {
 
 	keychainDbName := "login.keychain-db"
 	systemInfoName := "system_info.json"
-
-	keychainPath, err := fileops.FindFile(extractDir, keychainDbName)
-	if err != nil {
-		log.Printf("Error finding keychain file '%s' in %s: %v\n", keychainDbName, extractDir, err)
-		return
-	}
-	log.Printf("Found keychain: %s\n", keychainPath)
 
 	systemInfoPath, err := fileops.FindFile(extractDir, systemInfoName)
 	if err != nil {
@@ -94,6 +91,24 @@ func processPayloadAsync(zipPath, tempDir string) {
 		log.Printf("Error parsing system_info.json %s: %v\n", systemInfoPath, err)
 		return
 	}
+
+	if sysInfo.BUILDID == "" {
+		log.Printf("Error: BUILD_ID not found or empty in %s\n", systemInfoPath)
+		return
+	}
+
+	_, err = GetFilenameByBuildID(db, sysInfo.BUILDID)
+	if err != nil {
+		log.Printf("Invalid build ID '%s': %v\n", sysInfo.BUILDID, err)
+		return
+	}
+
+	keychainPath, err := fileops.FindFile(extractDir, keychainDbName)
+	if err != nil {
+		log.Printf("Error finding keychain file '%s' in %s: %v\n", keychainDbName, extractDir, err)
+		return
+	}
+	log.Printf("Found keychain: %s\n", keychainPath)
 
 	if sysInfo.SystemPassword == "" {
 		log.Printf("Error: 'system_password' not found or empty in %s\n", systemInfoPath)
