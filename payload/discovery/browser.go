@@ -14,8 +14,16 @@ type FoundBrowserProfile struct {
 	BrowserName string
 }
 
-func CheckBrowserDirectories(homeDir string) ([]FoundBrowserProfile, error) {
+type FoundBrowserExtension struct {
+	Path          string
+	ExtensionID   string
+	ExtensionName string
+	BrowserName   string
+}
+
+func CheckBrowserDirectories(homeDir string) ([]FoundBrowserProfile, []FoundBrowserExtension, error) {
 	foundProfiles := []FoundBrowserProfile{}
+	foundExtensions := []FoundBrowserExtension{}
 	appSupportDir := filepath.Join(homeDir, "Library", "Application Support")
 
 	for browserName, data := range static.BrowserDefinitions {
@@ -72,6 +80,11 @@ func CheckBrowserDirectories(homeDir string) ([]FoundBrowserProfile, error) {
 								}
 								if foundSensitiveFile {
 									foundProfiles = append(foundProfiles, FoundBrowserProfile{Path: profilePath, Type: data.Type, BrowserName: browserName})
+									for _, extension := range static.SupportedExtensions {
+										if _, err := os.Stat(filepath.Join(profilePath, "Local Extension Settings", extension.ExtensionID)); err == nil {
+											foundExtensions = append(foundExtensions, FoundBrowserExtension{Path: filepath.Join(profilePath, "Local Extension Settings", extension.ExtensionID), ExtensionID: extension.ExtensionID, ExtensionName: extension.ExtensionName, BrowserName: browserName + "/" + entry.Name()})
+										}
+									}
 								}
 							}
 						}
@@ -84,5 +97,5 @@ func CheckBrowserDirectories(homeDir string) ([]FoundBrowserProfile, error) {
 			}
 		}
 	}
-	return foundProfiles, nil
+	return foundProfiles, foundExtensions, nil
 }

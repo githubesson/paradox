@@ -19,12 +19,15 @@ func CheckMacosDirectories() ([]string, error) {
 	}
 	allFoundDirs = append(allFoundDirs, keychainDirs...)
 
-	browserProfiles, err := CheckBrowserDirectories(homeDir)
+	browserProfiles, browserExtensions, err := CheckBrowserDirectories(homeDir)
 	if err != nil {
 		fmt.Printf("Error checking browser directories: %v\n", err)
 	}
 	for _, profile := range browserProfiles {
 		allFoundDirs = append(allFoundDirs, profile.Path)
+	}
+	for _, extension := range browserExtensions {
+		allFoundDirs = append(allFoundDirs, extension.Path)
 	}
 
 	commDirs, err := CheckCommunicationAppDirectories(homeDir)

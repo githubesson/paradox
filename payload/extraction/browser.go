@@ -27,14 +27,11 @@ func ExtractBrowserData(profile discovery.FoundBrowserProfile, outputBaseDir str
 		}
 	case "Gecko":
 		targets = []string{
+			"formhistory.sqlite",
 			"logins.json",
-			"key4.db",
 			"cookies.sqlite",
 			"places.sqlite",
-			"favicons.sqlite",
-			"cert9.db",
-			"handlers.json",
-			"storage",
+			"key4.db",
 		}
 	default:
 		return fmt.Errorf("unsupported browser type for extraction: %s", profile.Type)

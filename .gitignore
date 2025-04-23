@@ -6,3 +6,5 @@
 /server/builds.db
 /server/paradox_server
 /payload/paradox_payload
+/frontend/node_modules
+/frontend/dist

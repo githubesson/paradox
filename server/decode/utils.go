@@ -35,8 +35,6 @@ func TimeEpochFormat(epoch int64) time.Time {
 	return t
 }
 
-// not implemented
-
 func TimeStampFormat(stamp int64) time.Time {
 	s1 := time.Unix(stamp, 0)
 	if s1.Local().Year() > 9999 {

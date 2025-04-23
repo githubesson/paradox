@@ -112,3 +112,73 @@ func FindAllFiles(root, fileName string) ([]string, error) {
 
 	return foundPaths, nil
 }
+
+func ZipDirectory(sourceDir, zipFilePath string) error {
+	zipFile, err := os.Create(zipFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create zip file %s: %w", zipFilePath, err)
+	}
+	defer zipFile.Close()
+
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	sourceDirAbs, err := filepath.Abs(sourceDir)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path of %s: %w", sourceDir, err)
+	}
+
+	err = filepath.Walk(sourceDirAbs, func(filePath string, fileInfo os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error walking %s: %w", filePath, err)
+		}
+
+		header, err := zip.FileInfoHeader(fileInfo)
+		if err != nil {
+			return fmt.Errorf("failed to create header for %s: %w", filePath, err)
+		}
+
+		relPath, err := filepath.Rel(sourceDirAbs, filePath)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path for %s: %w", filePath, err)
+		}
+
+		if fileInfo.IsDir() {
+			header.Name = relPath + "/"
+		} else {
+			header.Name = relPath
+		}
+
+		header.Method = zip.Deflate
+
+		if fileInfo.IsDir() {
+			_, err = zipWriter.CreateHeader(header)
+			if err != nil {
+				return fmt.Errorf("failed to create directory header for %s: %w", relPath, err)
+			}
+		} else {
+			writer, err := zipWriter.CreateHeader(header)
+			if err != nil {
+				return fmt.Errorf("failed to create file header for %s: %w", relPath, err)
+			}
+
+			file, err := os.Open(filePath)
+			if err != nil {
+				return fmt.Errorf("failed to open file %s: %w", filePath, err)
+			}
+			defer file.Close()
+
+			_, err = io.Copy(writer, file)
+			if err != nil {
+				return fmt.Errorf("failed to write file %s to zip: %w", filePath, err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("error creating zip archive: %w", err)
+	}
+
+	return nil
+}

